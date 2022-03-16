@@ -10,12 +10,15 @@ use std::env;
 fn main() -> std::io::Result<()> {
     let args: Vec<String> = env::args().collect();
 
-    for x in &args {
-        print!("{}\r\n", x);
-    }
     if args.len() <= 1 {
         let err: Error = Error::from(ErrorKind::InvalidInput);
+        print!("URL is required to run this program\r\n");
         return Err(err);
+    }
+
+    for x in &args {
+        print!("-- show all arguments --");
+        print!("{}\r\n", x);
     }
 
     let url = &args[0];
