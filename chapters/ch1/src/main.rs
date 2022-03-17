@@ -4,7 +4,7 @@ use std::io::prelude::*;
 use std::io::{Error, ErrorKind};
 use std::net::TcpStream;
 
-mod uri;
+use hw_uri;
 
 // type ResponseHeader = HashMap<&str, &str>;
 // type ResponseBody = &str;
@@ -23,7 +23,7 @@ fn main() -> std::io::Result<()> {
         print!("{}\r\n", x);
     }
 
-    let maybe_uri: Option<uri::URI> = uri::parse(&args[0]);
+    let maybe_uri: Option<hw_uri::URI> = hw_uri::parse(&args[0]);
 
     match maybe_uri {
         None => invalid_uri(&args[0]),
@@ -36,10 +36,9 @@ fn invalid_uri(uri: &str) -> std::io::Result<()> {
     Ok(())
 }
 
-fn fetch_page(url: uri::URI) -> std::io::Result<()> {
+fn fetch_page(url: hw_uri::URI) -> std::io::Result<()> {
     let domain: String = format!("{}:{}", url.domain, url.port);
     let mut stream: TcpStream = TcpStream::connect(domain)?;
-
 
     // TODO: read from uri.path and domain
     stream.write(b"GET /index.html HTTP/1.0\r\n")?;

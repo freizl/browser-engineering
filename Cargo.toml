@@ -1,5 +1,5 @@
 [workspace]
-members = ["chapters/*"]
+members = ["crates/*", "chapters/*"]
 
 [profile.dev]
 # Disabling debug info speeds up builds a bunch,

@@ -5,3 +5,10 @@ version = 3
 [[package]]
 name = "browser-eng-ch1"
 version = "0.1.0"
+dependencies = [
+ "hw_uri",
+]
+
+[[package]]
+name = "hw_uri"
+version = "0.1.0"
