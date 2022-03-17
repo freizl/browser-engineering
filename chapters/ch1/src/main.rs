@@ -50,17 +50,19 @@ fn fetch_page(url: hw_uri::URI) -> std::io::Result<()> {
     stream.read_to_string(&mut buffer)?;
 
     let (status, header, body) = parse_response(&buffer);
-    print!("\r\nstatus: {}", status);
-    print!("\r\nbody: {}", body);
-    print!("\r\nheaders:");
+    print!("status: {}\r\n", status);
+    print!("body: {}\r\n", body);
+    print!("headers:\r\n");
     for (k, v) in &header {
-        print!("\r\n\t{} - {}", k, v);
+        print!("\t{} - {}\r\n", k, v);
     }
 
     Ok(())
 }
 fn parse_response(resp: &str) -> (&str, HashMap<&str, &str>, &str) {
+    // split between body and others
     let xs: Vec<&str> = resp.split("\r\n\r\n").collect();
+    // split between status and headers
     let mut ys: Vec<&str> = xs[0].split("\r\n").collect();
     let mut hs = HashMap::new();
 

@@ -5,4 +5,14 @@ My play with [[https://browser.engineering/][Browser Engineering]]
 * Test sites
 - https://example.org
 - https://httpbin.org/get
--
+
+* Rust notes
+** String v.s. &str
+- ~String~,
+  + growable
+  + store in heap
+  + It's documented well in rust source code.
+- ~str~
+  + String literals
+  + immutable, fixed length
+  + can only be borrowed as ~&str~
