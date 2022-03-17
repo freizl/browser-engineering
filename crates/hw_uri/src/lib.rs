@@ -1,3 +1,5 @@
+use std::fmt;
+
 pub struct URI {
     pub protocol: String,
     pub domain: String,
@@ -6,25 +8,49 @@ pub struct URI {
     pub query_param: String,
 }
 
-pub fn parse(uri: &str) -> Option<URI> {
-    if uri.len() == 0 {
+impl fmt::Display for URI {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}://{}:{}{}",
+            self.protocol, self.domain, self.port, self.path
+        )
+    }
+}
+
+pub fn parse(uri_input: &str) -> Option<URI> {
+    if uri_input.len() == 0 {
         return None;
     }
 
-    // TODO: assume protocol is https
-    // let pro = uri[0..5];
-    // let rest = uri[8..];
-    // let rest_xs = rest.split("/");
-    // let d = rest_xs[0];
-    // let path = rest_xs.len() > 1 ? rest_xs[1] : "index.html";
+    let xs: Vec<&str> = uri_input.split("://").collect();
+    print!("uri: {}", uri_input);
+    print!("breaks: {}", xs.join(", "));
+
+    let protocol = xs[0];
+    let _port: u64 = if protocol == "https" { 443 } else { 80 };
+    let rest_xs: Vec<&str> = xs[1].split("/").collect();
+    let domain = rest_xs[0];
+    let mut path = "index.html";
+    if rest_xs.len() > 1 {
+        // TODO: query param and hash is not support yet.
+        if rest_xs[1] != "/" {
+            path = rest_xs[1];
+        }
+    }
+    let mut path2 = String::from("/");
+    path2.push_str(path);
 
     let uri = URI {
-        protocol: String::from("https"),
-        domain: String::from("example.com"),
+        protocol: protocol.to_string(),
+        domain: domain.to_string(),
+        // TODO: support send over 443 port
         port: 80,
-        path: String::from("/"),
-        query_param: String::from("/"),
+        path: path2,
+        query_param: String::from(" "),
     };
+    print!("uri: {}", uri);
+
     return Some(uri);
 }
 

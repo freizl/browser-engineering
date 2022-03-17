@@ -23,10 +23,10 @@ fn main() -> std::io::Result<()> {
         print!("{}\r\n", x);
     }
 
-    let maybe_uri: Option<hw_uri::URI> = hw_uri::parse(&args[0]);
+    let maybe_uri: Option<hw_uri::URI> = hw_uri::parse(&args[1]);
 
     match maybe_uri {
-        None => invalid_uri(&args[0]),
+        None => invalid_uri(&args[1]),
         Some(uri) => fetch_page(uri),
     }
 }
@@ -40,20 +40,21 @@ fn fetch_page(url: hw_uri::URI) -> std::io::Result<()> {
     let domain: String = format!("{}:{}", url.domain, url.port);
     let mut stream: TcpStream = TcpStream::connect(domain)?;
 
-    // TODO: read from uri.path and domain
-    stream.write(b"GET /index.html HTTP/1.0\r\n")?;
-    stream.write(b"Host: example.org\r\n\r\n")?;
+    // stream.write(b"GET /get HTTP/1.0\r\n")?;
+    // stream.write(b"Host: httpbin.org\r\n\r\n")?;
+    stream.write(format!("GET {} HTTP/1.0\r\n", url.path).as_bytes())?;
+    stream.write(format!("Host: {}\r\n\r\n", url.domain).as_bytes())?;
     stream.flush()?;
 
     let mut buffer = String::new();
     stream.read_to_string(&mut buffer)?;
-    // print!("{}", buffer);
 
     let (status, header, body) = parse_response(&buffer);
-    print!("status: {}", status);
-    print!("body: {}", body);
+    print!("\r\nstatus: {}", status);
+    print!("\r\nbody: {}", body);
+    print!("\r\nheaders:");
     for (k, v) in &header {
-        print!("{} - {}\r\n", k, v);
+        print!("\r\n\t{} - {}", k, v);
     }
 
     Ok(())
@@ -65,7 +66,6 @@ fn parse_response(resp: &str) -> (&str, HashMap<&str, &str>, &str) {
 
     let status = ys.remove(0);
     for hl in ys.iter() {
-        print!("{}", hl);
         let zs: Vec<&str> = hl.split(": ").collect();
         hs.insert(zs[0], zs[1]);
     }
