@@ -1,8 +1,10 @@
+use std::collections::HashMap;
+use std::env;
 use std::io::prelude::*;
 use std::io::{Error, ErrorKind};
 use std::net::TcpStream;
-use std::collections::HashMap;
-use std::env;
+
+mod uri;
 
 // type ResponseHeader = HashMap<&str, &str>;
 // type ResponseBody = &str;
@@ -21,11 +23,25 @@ fn main() -> std::io::Result<()> {
         print!("{}\r\n", x);
     }
 
-    let url = &args[0];
-    // TODO: parse URL
+    let maybe_uri: Option<uri::URI> = uri::parse(&args[0]);
 
-    let mut stream: TcpStream = TcpStream::connect("example.org:80")?;
+    match maybe_uri {
+        None => invalid_uri(&args[0]),
+        Some(uri) => fetch_page(uri),
+    }
+}
 
+fn invalid_uri(uri: &str) -> std::io::Result<()> {
+    print!("Invalid uri {}", uri);
+    Ok(())
+}
+
+fn fetch_page(url: uri::URI) -> std::io::Result<()> {
+    let domain: String = format!("{}:{}", url.domain, url.port);
+    let mut stream: TcpStream = TcpStream::connect(domain)?;
+
+
+    // TODO: read from uri.path and domain
     stream.write(b"GET /index.html HTTP/1.0\r\n")?;
     stream.write(b"Host: example.org\r\n\r\n")?;
     stream.flush()?;
@@ -43,7 +59,6 @@ fn main() -> std::io::Result<()> {
 
     Ok(())
 }
-
 fn parse_response(resp: &str) -> (&str, HashMap<&str, &str>, &str) {
     let xs: Vec<&str> = resp.split("\r\n\r\n").collect();
     let mut ys: Vec<&str> = xs[0].split("\r\n").collect();
