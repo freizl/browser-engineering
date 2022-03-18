@@ -1,8 +1,7 @@
 use openssl::ssl::{SslConnector, SslMethod};
 use std::collections::HashMap;
 use std::env;
-use std::io::prelude::*;
-use std::io::{Error, ErrorKind};
+use std::io::{Error, ErrorKind, Read, Write};
 use std::net::TcpStream;
 
 use hw_uri;
@@ -57,11 +56,7 @@ fn read_tcp_stream(uri_input: hw_uri::URI, buffer: &mut String) -> std::io::Resu
     let domain: String = uri_input.get_domain_port();
     let mut stream: TcpStream = TcpStream::connect(domain)?;
 
-    stream.write(format!("GET {} HTTP/1.0\r\n", uri_input.path).as_bytes())?;
-    stream.write(format!("Host: {}\r\n\r\n", uri_input.domain).as_bytes())?;
-    stream.flush()?;
-
-    stream.read_to_string(buffer)
+    write_n_read_stream(&mut stream, uri_input, buffer)
 }
 
 fn read_ssl_stream(uri_input: hw_uri::URI, buffer: &mut String) -> std::io::Result<usize> {
@@ -70,8 +65,21 @@ fn read_ssl_stream(uri_input: hw_uri::URI, buffer: &mut String) -> std::io::Resu
     let connector = SslConnector::builder(SslMethod::tls()).unwrap().build();
     let mut stream = connector.connect(&uri_input.domain, tcp_stream).unwrap();
 
-    stream.write(format!("GET {} HTTP/1.0\r\n", uri_input.path).as_bytes())?;
-    stream.write(format!("Host: {}\r\n\r\n", uri_input.domain).as_bytes())?;
+    write_n_read_stream(&mut stream, uri_input, buffer)
+}
+
+fn write_n_read_stream<T: Write + Read>(
+    stream: &mut T,
+    uri_input: hw_uri::URI,
+    buffer: &mut String,
+) -> std::io::Result<usize> {
+    let request: String = format!("GET {} HTTP/1.1\r\n", uri_input.path)
+        + &(format!("Host: {}\r\n", uri_input.domain))
+        + &("User-Agent: hw-browser-poc\r\n")
+        + &("Connection: close\r\n")
+        + &("\r\n");
+
+    stream.write(request.as_bytes())?;
     stream.flush()?;
 
     stream.read_to_string(buffer)

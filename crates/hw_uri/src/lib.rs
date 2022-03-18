@@ -35,9 +35,16 @@ pub fn parse(uri_input: &str) -> Option<URI> {
     let xs: Vec<&str> = uri_input.split("://").collect();
 
     let protocol = xs[0];
-    let port: u64 = if protocol == "https" { 443 } else { 80 };
     let rest_xs: Vec<&str> = xs[1].split("/").collect();
-    let domain = rest_xs[0];
+    let domain_str = rest_xs[0];
+    let domain_str_xs: Vec<&str> = domain_str.split(":").collect();
+    let mut port: u64 = if protocol == "https" { 443 } else { 80 };
+    if domain_str_xs.len() == 2 {
+        // TODO: unwrap is probably not ideal
+        // shall error out if passing wrong format port number
+        port = domain_str_xs[1].parse::<u64>().unwrap();
+    }
+    let domain = domain_str_xs[0];
     let mut path = "index.html";
     if rest_xs.len() > 1 {
         // TODO: query param and hash is not support yet.
