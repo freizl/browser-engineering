@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 
 hw_uri = { path = "../../crates/hw_uri" }
+openssl = "0.10"

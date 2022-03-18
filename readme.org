@@ -8,7 +8,7 @@ My play with [[https://browser.engineering/][Browser Engineering]]
 
 * Rust notes
 ** String v.s. &str
-- ~String~,
+- ~String~
   + growable
   + store in heap
   + It's documented well in rust source code.

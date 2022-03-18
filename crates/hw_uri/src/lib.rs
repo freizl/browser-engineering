@@ -8,6 +8,15 @@ pub struct URI {
     pub query_param: String,
 }
 
+impl URI {
+    pub fn use_tls(&self) -> bool {
+        self.protocol == "https"
+    }
+    pub fn get_domain_port(&self) -> String {
+        format!("{}:{}", self.domain, self.port)
+    }
+}
+
 impl fmt::Display for URI {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
@@ -24,11 +33,9 @@ pub fn parse(uri_input: &str) -> Option<URI> {
     }
 
     let xs: Vec<&str> = uri_input.split("://").collect();
-    print!("uri: {}", uri_input);
-    print!("breaks: {}", xs.join(", "));
 
     let protocol = xs[0];
-    let _port: u64 = if protocol == "https" { 443 } else { 80 };
+    let port: u64 = if protocol == "https" { 443 } else { 80 };
     let rest_xs: Vec<&str> = xs[1].split("/").collect();
     let domain = rest_xs[0];
     let mut path = "index.html";
@@ -45,11 +52,10 @@ pub fn parse(uri_input: &str) -> Option<URI> {
         protocol: protocol.to_string(),
         domain: domain.to_string(),
         // TODO: support send over 443 port
-        port: 80,
+        port,
         path: path2,
         query_param: String::from(" "),
     };
-    print!("uri: {}", uri);
 
     return Some(uri);
 }
