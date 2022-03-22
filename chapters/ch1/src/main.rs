@@ -1,12 +1,14 @@
 use openssl::ssl::{SslConnector, SslMethod};
 use std::collections::HashMap;
 use std::env;
-use std::io::{Error, ErrorKind, Read, Write};
+use std::io::{Error, ErrorKind, Read, Write, Result};
 use std::net::TcpStream;
+use std::path::Path;
+use std::fs;
 
 use hw_uri;
 
-fn main() -> std::io::Result<()> {
+fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
 
     if args.len() <= 1 {
@@ -28,13 +30,25 @@ fn main() -> std::io::Result<()> {
     }
 }
 
-fn invalid_uri(uri: &str) -> std::io::Result<()> {
+fn invalid_uri(uri: &str) -> Result<()> {
     print!("Invalid uri {}", uri);
     Ok(())
 }
 
-fn fetch_page(url: hw_uri::URI) -> std::io::Result<()> {
+fn fetch_page(url: hw_uri::URI) -> Result<()> {
     let mut buffer = String::new();
+
+    if url.is_file() {
+        let file_path = Path::new(&url.path);
+        if !Path::exists(file_path) {
+            let err_msg = format!("can not find file: {}", url.path);
+            return Err(Error::new(ErrorKind::NotFound, err_msg));
+        }
+        let file_content = fs::read(file_path).unwrap();
+        print!("{}", String::from_utf8(file_content).unwrap());
+        return Ok(());
+    }
+
     if url.use_tls() {
         read_ssl_stream(url, &mut buffer)?;
     } else {
@@ -52,14 +66,14 @@ fn fetch_page(url: hw_uri::URI) -> std::io::Result<()> {
     Ok(())
 }
 
-fn read_tcp_stream(uri_input: hw_uri::URI, buffer: &mut String) -> std::io::Result<usize> {
+fn read_tcp_stream(uri_input: hw_uri::URI, buffer: &mut String) -> Result<usize> {
     let domain: String = uri_input.get_domain_port();
     let mut stream: TcpStream = TcpStream::connect(domain)?;
 
     write_n_read_stream(&mut stream, uri_input, buffer)
 }
 
-fn read_ssl_stream(uri_input: hw_uri::URI, buffer: &mut String) -> std::io::Result<usize> {
+fn read_ssl_stream(uri_input: hw_uri::URI, buffer: &mut String) -> Result<usize> {
     let domain: String = uri_input.get_domain_port();
     let tcp_stream: TcpStream = TcpStream::connect(domain)?;
     let connector = SslConnector::builder(SslMethod::tls()).unwrap().build();
@@ -72,7 +86,7 @@ fn write_n_read_stream<T: Write + Read>(
     stream: &mut T,
     uri_input: hw_uri::URI,
     buffer: &mut String,
-) -> std::io::Result<usize> {
+) -> Result<usize> {
     let request: String = format!("GET {} HTTP/1.1\r\n", uri_input.path)
         + &(format!("Host: {}\r\n", uri_input.domain))
         + &("User-Agent: hw-browser-poc\r\n")

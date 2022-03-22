@@ -12,6 +12,11 @@ impl URI {
     pub fn use_tls(&self) -> bool {
         self.protocol == "https"
     }
+
+    pub fn is_file(&self) -> bool {
+        self.protocol == "file"
+    }
+
     pub fn get_domain_port(&self) -> String {
         format!("{}:{}", self.domain, self.port)
     }
@@ -45,22 +50,24 @@ pub fn parse(uri_input: &str) -> Option<URI> {
         port = domain_str_xs[1].parse::<u64>().unwrap();
     }
     let domain = domain_str_xs[0];
-    let mut path = "index.html";
-    if rest_xs.len() > 1 {
+    let mut path: String = String::from("/index.html");
+    if protocol == "file" {
+        path = String::from(xs[1]);
+    } else if rest_xs.len() > 1 {
         // TODO: query param and hash is not support yet.
         if rest_xs[1] != "/" {
-            path = rest_xs[1];
+            let mut tmp = String::from("/");
+            tmp.push_str(rest_xs[1]);
+            path = String::from(format!("/{}", rest_xs[1]));
         }
     }
-    let mut path2 = String::from("/");
-    path2.push_str(path);
 
     let uri = URI {
         protocol: protocol.to_string(),
         domain: domain.to_string(),
         // TODO: support send over 443 port
         port,
-        path: path2,
+        path: path.to_string(),
         query_param: String::from(" "),
     };
 
