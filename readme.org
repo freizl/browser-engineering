@@ -1,10 +1,15 @@
-#+TITLE: README
+#+TITLE: Web Browser Engineering
 
-My play with [[https://browser.engineering/][Browser Engineering]]
+My play with [[https://browser.engineering/][Browser Engineering]].
 
 * Test sites
 - https://example.org
 - https://httpbin.org/get
+
+* Rust Libraries
+- [[https://github.com/ctz/rustls][TLS - rustls]]
+- [[https://github.com/linebender/druid][GUI - druid]]
+- [[https://github.com/rust-lang/flate2-rs][compression - flate2]]
 
 * Rust notes
 ** String v.s. &str
@@ -16,3 +21,6 @@ My play with [[https://browser.engineering/][Browser Engineering]]
   + String literals
   + immutable, fixed length
   + can only be borrowed as ~&str~
+
+* References
+- https://github.com/rust-kr/browser-engineering
