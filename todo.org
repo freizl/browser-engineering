@@ -1,0 +1,7 @@
+#+title: Todo
+
+
+* Chapter 1 Downloading Web Pages
+1. [X] Add additional headers
+2. [X] File URLs
+3. [ ] data protocol
